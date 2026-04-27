@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — Kanban</title>
+  <link rel="stylesheet" href="taskflow.css">
+  <style>
+    .kanban-header-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .kanban-project-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+    .kanban-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-2);
+      color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+    .kanban-tab:hover { border-color: var(--border-light); color: var(--text-primary); }
+    .kanban-tab.active { border-color: transparent; color: #000; }
+    .kanban-tab .tab-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .kanban-col {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color var(--transition);
+    }
+
+    .kanban-col.drag-over {
+      border-color: var(--accent);
+      background: rgba(240,165,0,0.03);
+    }
+
+    .kanban-col-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: var(--nav-h);
+      background: var(--bg-1);
+      border-radius: var(--radius) var(--radius) 0 0;
+      z-index: 1;
+    }
+
+    .col-indicator {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .col-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      flex: 1;
+    }
+
+    .col-count {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 1px 8px;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .col-add {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: all var(--transition);
+      line-height: 1;
+    }
+    .col-add:hover { color: var(--text-primary); background: var(--bg-3); }
+
+    .kanban-cards {
+      padding: 12px;
+      flex: 1;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .kanban-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      cursor: grab;
+      transition: all var(--transition);
+      animation: fadeIn 0.2s ease;
+      user-select: none;
+    }
+
+    .kanban-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .kanban-card.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+
+    .kanban-card.ghost {
+      opacity: 0.3;
+      border: 2px dashed var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .card-priority-strip {
+      height: 3px;
+      border-radius: 100px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .card-due {
+      font-size: 0.68rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .card-due.overdue { color: var(--red); }
+
+    .card-actions-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      justify-content: flex-end;
+    }
+
+    .card-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all var(--transition);
+    }
+    .card-btn:hover { color: var(--text-primary); background: var(--bg-3); }
+    .card-btn.del:hover { color: var(--red); }
+
+    .assignee-avatar-sm {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000;
+      font-size: 0.6rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .drop-placeholder {
+      border: 2px dashed var(--border-light);
+      border-radius: var(--radius-sm);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .kanban-board { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="navWrap"></div>
+
+  <main class="main">
+    <div class="container" style="max-width:1280px">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Tab<span>lero</span> Kanban</h1>
+          <p class="page-subtitle">Arrastra las tarjetas para cambiar su estado</p>
+        </div>
+        <button class="btn btn-primary" id="newTaskBtn">+ Nueva Tarea</button>
+      </div>
+
+      <!-- Project tabs -->
+      <div class="kanban-header-row">
+        <div class="kanban-project-tabs" id="projectTabs"></div>
+      </div>
+
+      <!-- Board -->
+      <div class="kanban-board" id="kanbanBoard"></div>
+    </div>
+  </main>
+
+  <!-- Modal: Quick Task -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modalTitle">Nueva Tarea</span>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Título *</label>
+        <input type="text" class="form-input" id="taskTitle" placeholder="Descripción breve...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <textarea class="form-textarea" id="taskDesc" placeholder="Detalles..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prioridad</label>
+          <select class="form-select" id="taskPriority">
+            <option value="high">🔴 Alta</option>
+            <option value="medium" selected>🟡 Media</option>
+            <option value="low">🟢 Baja</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado inicial</label>
+          <select class="form-select" id="taskStatus">
+            <option value="pending">Pendiente</option>
+            <option value="progress">En Progreso</option>
+            <option value="done">Completada</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Proyecto</label>
+          <select class="form-select" id="taskProject"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha límite</label>
+          <input type="date" class="form-input" id="taskDue">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modalCancel">Cancelar</button>
+        <button class="btn btn-primary" id="modalSave">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="taskflow.js"></script>
+  <script>
+    let selectedProject = null;
+    let draggingId = null;
+    let editingId = null;
+    let addStatus = 'pending';
+
+    const COLS = [
+      { id: 'pending', title: 'Pendiente', color: 'var(--text-muted)' },
+      { id: 'progress', title: 'En Progreso', color: 'var(--blue)' },
+      { id: 'done', title: 'Completado', color: 'var(--green)' },
+    ];
+
+    const PRIORITY_COLORS = { high: 'var(--red)', medium: 'var(--accent)', low: 'var(--green)' };
+
+    // ── Project Tabs ──────────────────────────────────────────────────────────
+    function renderTabs() {
+      const projects = TF.getProjects();
+      const tabsEl = document.getElementById('projectTabs');
+
+      tabsEl.innerHTML = `
+        <div class="kanban-tab ${!selectedProject ? 'active' : ''}"
+          style="${!selectedProject ? 'background:var(--accent);border-color:var(--accent)' : ''}"
+          onclick="selectProject(null)">
+          <span class="tab-dot" style="background:${!selectedProject ? '#000' : 'var(--text-muted)'}"></span>
+          Todos
+        </div>
+      ` + projects.map(p => {
+        const active = selectedProject === p.id;
+        return `<div class="kanban-tab ${active ? 'active' : ''}"
+          style="${active ? `background:${p.color};border-color:${p.color}` : ''}"
+          onclick="selectProject('${p.id}')">
+          <span class="tab-dot" style="background:${active ? '#000' : p.color}"></span>
+          ${p.name}
+        </div>`;
+      }).join('');
+    }
+
+    function selectProject(id) {
+      selectedProject = id;
+      renderTabs();
+      renderBoard();
+    }
+
+    // ── Board ─────────────────────────────────────────────────────────────────
+    function renderBoard() {
+      let tasks = TF.getTasks();
+      if (selectedProject) tasks = tasks.filter(t => t.projectId === selectedProject);
+
+      const board = document.getElementById('kanbanBoard');
+      board.innerHTML = COLS.map(col => {
+        const colTasks = tasks.filter(t => t.status === col.id);
+        return `
+          <div class="kanban-col" id="col-${col.id}"
+            ondragover="onDragOver(event,'${col.id}')"
+            ondragleave="onDragLeave(event)"
+            ondrop="onDrop(event,'${col.id}')">
+            <div class="kanban-col-header">
+              <span class="col-indicator" style="background:${col.color}"></span>
+              <span class="col-title">${col.title}</span>
+              <span class="col-count">${colTasks.length}</span>
+              <button class="col-add" onclick="openNew('${col.id}')" title="Añadir tarea">+</button>
+            </div>
+            <div class="kanban-cards" id="cards-${col.id}">
+              ${colTasks.length === 0
+                ? `<div class="drop-placeholder">Arrastra aquí</div>`
+                : colTasks.map(t => renderCard(t)).join('')
+              }
+            </div>
+          </div>`;
+      }).join('');
+
+      // Re-attach drag events
+      attachDragEvents();
+    }
+
+    function renderCard(t) {
+      const project = t.projectId ? TF.getProject(t.projectId) : null;
+      const assignee = t.assigneeId ? TF.getUser(t.assigneeId) : null;
+      const overdue = TF.isOverdue(t);
+      return `
+        <div class="kanban-card" id="card-${t.id}" draggable="true"
+          data-id="${t.id}">
+          <div class="card-priority-strip" style="background:${PRIORITY_COLORS[t.priority]}"></div>
+          <div class="card-title">${t.title}</div>
+          ${t.description ? `<div class="card-desc">${t.description}</div>` : ''}
+          <div class="card-footer">
+            <div class="card-tags">
+              <span class="badge ${TF.priorityClass[t.priority]}" style="font-size:0.65rem">${TF.priorityLabel[t.priority]}</span>
+              ${project ? `<span class="badge" style="background:${project.color}22;color:${project.color};font-size:0.65rem">${project.name}</span>` : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              ${assignee ? `<div class="assignee-avatar-sm" title="${assignee.name}">${assignee.avatar}</div>` : ''}
+              ${t.dueDate ? `<span class="card-due ${overdue ? 'overdue' : ''}">${overdue ? '⚠ ' : ''}${TF.formatDate(t.dueDate)}</span>` : ''}
+            </div>
+          </div>
+          <div class="card-actions-row">
+            <button class="card-btn" onclick="openEdit('${t.id}')">✎ Editar</button>
+            <button class="card-btn del" onclick="delTask('${t.id}')">✕</button>
+          </div>
+        </div>`;
+    }
+
+    // ── Drag & Drop ───────────────────────────────────────────────────────────
+    function attachDragEvents() {
+      document.querySelectorAll('.kanban-card').forEach(card => {
+        card.addEventListener('dragstart', e => {
+          draggingId = card.dataset.id;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+        });
+      });
+    }
+
+    function onDragOver(e, colId) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.getElementById('col-' + colId).classList.add('drag-over');
+    }
+
+    function onDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+
+    function onDrop(e, colId) {
+      e.preventDefault();
+      document.getElementById('col-' + colId).classList.remove('drag-over');
+      if (!draggingId) return;
+      const task = TF.getTask(draggingId);
+      if (!task || task.status === colId) return;
+      TF.updateTask(draggingId, { status: colId });
+      const labels = { pending: 'Pendiente', progress: 'En Progreso', done: 'Completada' };
+      showToast(`Movida a "${labels[colId]}"`, 'success');
+      draggingId = null;
+      renderBoard();
+    }
+
+    // ── Modal ─────────────────────────────────────────────────────────────────
+    function populateProjectSelect(val = '') {
+      const projects = TF.getProjects();
+      document.getElementById('taskProject').innerHTML =
+        '<option value="">Sin proyecto</option>' +
+        projects.map(p => `<option value="${p.id}" ${p.id === (val || selectedProject) ? 'selected' : ''}>${p.name}</option>`).join('');
+    }
+
+    function openNew(status = 'pending') {
+      editingId = null;
+      addStatus = status;
+      populateProjectSelect();
+      document.getElementById('modalTitle').textContent = 'Nueva Tarea';
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskDesc').value = '';
+      document.getElementById('taskPriority').value = 'medium';
+      document.getElementById('taskStatus').value = status;
+      document.getElementById('taskDue').value = '';
+      document.getElementById('modalOverlay').classList.add('open');
+      document.getElementById('taskTitle').focus();
+    }
+
+    function openEdit(id) {
+      const t = TF.getTask(id);
+      if (!t) return;
+      editingId = id;
+      populateProjectSelect(t.projectId);
+      document.getElementById('modalTitle').textContent = 'Editar Tarea';
+      document.getElementById('taskTitle').value = t.title;
+      document.getElementById('taskDesc').value = t.description;
+      document.getElementById('taskPriority').value = t.priority;
+      document.getElementById('taskStatus').value = t.status;
+      document.getElementById('taskDue').value = t.dueDate || '';
+      document.getElementById('modalOverlay').classList.add('open');
+      document.getElementById('taskTitle').focus();
+    }
+
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+    function saveTask() {
+      const title = document.getElementById('taskTitle').value.trim();
+      if (!title) { showToast('El título es obligatorio', 'error'); return; }
+      const data = {
+        title,
+        description: document.getElementById('taskDesc').value,
+        priority: document.getElementById('taskPriority').value,
+        status: document.getElementById('taskStatus').value,
+        dueDate: document.getElementById('taskDue').value || null,
+        projectId: document.getElementById('taskProject').value || null,
+      };
+      if (editingId) { TF.updateTask(editingId, data); showToast('Tarea actualizada', 'success'); }
+      else { TF.createTask(data); showToast('Tarea creada', 'success'); }
+      closeModal();
+      renderBoard();
+    }
+
+    async function delTask(id) {
+      const t = TF.getTask(id);
+      const ok = await confirmDialog('Eliminar tarea', `¿Eliminar "${t?.title}"?`);
+      if (!ok) return;
+      TF.deleteTask(id);
+      showToast('Tarea eliminada', 'info');
+      renderBoard();
+    }
+
+    // ── Events ────────────────────────────────────────────────────────────────
+    document.getElementById('newTaskBtn').addEventListener('click', () => openNew('pending'));
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    document.getElementById('modalSave').addEventListener('click', saveTask);
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    });
+    document.getElementById('taskTitle').addEventListener('keydown', e => { if (e.key === 'Enter') saveTask(); });
+
+    // ── URL params ────────────────────────────────────────────────────────────
+    const params = new URLSearchParams(location.search);
+    if (params.get('project')) selectedProject = params.get('project');
+
+    renderTabs();
+    renderBoard();
+  </script>
+</body>
+</html>

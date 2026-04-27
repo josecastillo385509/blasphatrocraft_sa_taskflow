@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow — Calendario</title>
+  <link rel="stylesheet" href="taskflow.css">
+  <style>
+    .cal-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* Calendar grid */
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .cal-nav-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      text-transform: capitalize;
+    }
+    .cal-nav-btns { display: flex; gap: 8px; }
+    .cal-nav-btn {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      width: 32px; height: 32px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all var(--transition);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cal-nav-btn:hover { border-color: var(--border-light); color: var(--text-primary); }
+
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+    .cal-weekday {
+      text-align: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 6px 0;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .cal-day {
+      min-height: 88px;
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      position: relative;
+    }
+    .cal-day:hover { border-color: var(--border-light); background: var(--bg-2); }
+    .cal-day.other-month { opacity: 0.35; }
+    .cal-day.today {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .cal-day.selected {
+      border-color: var(--blue);
+      background: var(--blue-dim);
+    }
+    .cal-day.has-tasks::after {
+      content: '';
+      position: absolute;
+      bottom: 4px; right: 4px;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .cal-day-num {
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+    .cal-day.today .cal-day-num { color: var(--accent); font-weight: 800; }
+
+    .cal-task-dot {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      padding: 1px 4px;
+      border-radius: 3px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .cal-task-dot-color { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .cal-task-dot span { overflow: hidden; text-overflow: ellipsis; }
+    .cal-more { font-size: 0.62rem; color: var(--text-muted); font-family: var(--font-mono); padding: 0 4px; }
+
+    /* Sidebar */
+    .cal-sidebar { position: sticky; top: calc(var(--nav-h) + 20px); }
+
+    .selected-day-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .day-task-item {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      transition: all var(--transition);
+      animation: fadeIn 0.2s ease;
+      cursor: pointer;
+    }
+    .day-task-item:hover { border-color: var(--border-light); }
+    .day-task-item.done-task { opacity: 0.5; }
+
+    .day-task-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    .day-task-title.done-text { text-decoration: line-through; }
+    .day-task-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .upcoming-section { margin-top: 24px; }
+    .upcoming-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .upcoming-item:last-child { border-bottom: none; }
+    .upcoming-date-box {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .upcoming-day-num { font-size: 0.9rem; font-weight: 800; font-family: var(--font-mono); line-height: 1; }
+    .upcoming-month { font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .upcoming-info { flex: 1; min-width: 0; }
+    .upcoming-title { font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .upcoming-proj { font-size: 0.7rem; color: var(--text-muted); }
+
+    @media (max-width: 900px) {
+      .cal-layout { grid-template-columns: 1fr; }
+      .cal-sidebar { position: static; }
+      .cal-day { min-height: 64px; }
+    }
+    @media (max-width: 480px) {
+      .cal-day { min-height: 48px; padding: 4px; }
+      .cal-task-dot { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="navWrap"></div>
+
+  <main class="main">
+    <div class="container" style="max-width:1200px">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Calen<span>dario</span></h1>
+          <p class="page-subtitle">Vista mensual de fechas límite</p>
+        </div>
+        <button class="btn btn-primary" id="newTaskBtn">+ Nueva Tarea</button>
+      </div>
+
+      <div class="cal-layout">
+        <!-- Calendar -->
+        <div>
+          <div class="card">
+            <div class="cal-nav">
+              <button class="cal-nav-btn" id="prevMonth">‹</button>
+              <span class="cal-nav-title" id="monthTitle"></span>
+              <div class="cal-nav-btns">
+                <button class="cal-nav-btn" id="todayBtn" title="Hoy" style="width:auto;padding:0 10px;font-size:0.75rem;font-weight:700">Hoy</button>
+                <button class="cal-nav-btn" id="nextMonth">›</button>
+              </div>
+            </div>
+            <div class="cal-weekdays">
+              <div class="cal-weekday">Dom</div>
+              <div class="cal-weekday">Lun</div>
+              <div class="cal-weekday">Mar</div>
+              <div class="cal-weekday">Mié</div>
+              <div class="cal-weekday">Jue</div>
+              <div class="cal-weekday">Vie</div>
+              <div class="cal-weekday">Sáb</div>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+
+          <!-- Legend -->
+          <div class="card" style="margin-top:16px">
+            <div class="card-header">
+              <span class="card-title">Prioridades</span>
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <div class="flex-center gap-8"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:block"></span><span style="font-size:0.8rem;color:var(--text-secondary)">Alta</span></div>
+              <div class="flex-center gap-8"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:block"></span><span style="font-size:0.8rem;color:var(--text-secondary)">Media</span></div>
+              <div class="flex-center gap-8"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:block"></span><span style="font-size:0.8rem;color:var(--text-secondary)">Baja</span></div>
+              <div class="flex-center gap-8"><span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:block;border:2px solid var(--accent)"></span><span style="font-size:0.8rem;color:var(--accent)">Hoy</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="cal-sidebar">
+          <div class="card mb-16">
+            <div class="selected-day-title" id="selectedDayTitle">Selecciona un día</div>
+            <div id="dayTasks">
+              <div class="empty-state" style="padding:20px">
+                <div class="empty-state-icon" style="font-size:1.5rem">◫</div>
+                <p>Haz clic en un día para ver sus tareas</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Próximas Fechas</span>
+            </div>
+            <div id="upcomingTasks"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Quick Task -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Nueva Tarea</span>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Título *</label>
+        <input type="text" class="form-input" id="taskTitle" placeholder="Descripción breve...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prioridad</label>
+          <select class="form-select" id="taskPriority">
+            <option value="high">🔴 Alta</option>
+            <option value="medium" selected>🟡 Media</option>
+            <option value="low">🟢 Baja</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Proyecto</label>
+          <select class="form-select" id="taskProject"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha límite</label>
+        <input type="date" class="form-input" id="taskDue">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modalCancel">Cancelar</button>
+        <button class="btn btn-primary" id="modalSave">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="taskflow.js"></script>
+  <script>
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    let selectedDate = null;
+
+    const todayStr = TF.today();
+    const PRIORITY_COLORS = { high: 'var(--red)', medium: 'var(--accent)', low: 'var(--green)' };
+
+    // ── Render Calendar ───────────────────────────────────────────────────────
+    function renderCalendar() {
+      const first = new Date(currentYear, currentMonth, 1);
+      const last = new Date(currentYear, currentMonth + 1, 0);
+      const startDay = first.getDay();
+
+      document.getElementById('monthTitle').textContent =
+        first.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+
+      const tasks = TF.getTasks().filter(t => t.dueDate);
+      const tasksByDate = {};
+      tasks.forEach(t => {
+        if (!tasksByDate[t.dueDate]) tasksByDate[t.dueDate] = [];
+        tasksByDate[t.dueDate].push(t);
+      });
+
+      const days = [];
+      // Prev month padding
+      for (let i = 0; i < startDay; i++) {
+        const d = new Date(currentYear, currentMonth, -startDay + i + 1);
+        days.push({ date: d, thisMonth: false });
+      }
+      // Current month
+      for (let i = 1; i <= last.getDate(); i++) {
+        days.push({ date: new Date(currentYear, currentMonth, i), thisMonth: true });
+      }
+      // Next month padding
+      const remaining = 42 - days.length;
+      for (let i = 1; i <= remaining; i++) {
+        days.push({ date: new Date(currentYear, currentMonth + 1, i), thisMonth: false });
+      }
+
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = days.map(({ date, thisMonth }) => {
+        const dateStr = date.toISOString().split('T')[0];
+        const isToday = dateStr === todayStr;
+        const isSel = dateStr === selectedDate;
+        const dayTasks = tasksByDate[dateStr] || [];
+        const hasTasks = dayTasks.length > 0;
+
+        const visible = dayTasks.slice(0, 3);
+        const more = dayTasks.length - 3;
+
+        return `
+          <div class="cal-day ${!thisMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSel ? 'selected' : ''} ${hasTasks ? 'has-tasks' : ''}"
+            onclick="selectDay('${dateStr}')">
+            <div class="cal-day-num">${date.getDate()}</div>
+            ${visible.map(t => {
+              const proj = t.projectId ? TF.getProject(t.projectId) : null;
+              const color = PRIORITY_COLORS[t.priority];
+              return `<div class="cal-task-dot" style="background:${color}22">
+                <span class="cal-task-dot-color" style="background:${color}"></span>
+                <span>${t.title}</span>
+              </div>`;
+            }).join('')}
+            ${more > 0 ? `<div class="cal-more">+${more} más</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    // ── Select Day ────────────────────────────────────────────────────────────
+    function selectDay(dateStr) {
+      selectedDate = dateStr;
+      renderCalendar();
+      renderDayTasks(dateStr);
+    }
+
+    function renderDayTasks(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      document.getElementById('selectedDayTitle').textContent =
+        d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+
+      const tasks = TF.getTasks().filter(t => t.dueDate === dateStr);
+      const el = document.getElementById('dayTasks');
+
+      if (!tasks.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:16px"><p>Sin tareas para este día</p></div>`;
+        return;
+      }
+
+      el.innerHTML = tasks.map(t => {
+        const project = t.projectId ? TF.getProject(t.projectId) : null;
+        const done = t.status === 'done';
+        return `
+          <div class="day-task-item ${done ? 'done-task' : ''}" onclick="location.href='tasks.html'">
+            <div class="day-task-title ${done ? 'done-text' : ''}">${t.title}</div>
+            <div class="day-task-meta">
+              <span class="badge ${TF.priorityClass[t.priority]}">${TF.priorityLabel[t.priority]}</span>
+              <span class="badge ${TF.statusClass[t.status]}">${TF.statusLabel[t.status]}</span>
+              ${project ? `<span class="badge badge-blue" style="background:${project.color}22;color:${project.color}">${project.name}</span>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Upcoming ──────────────────────────────────────────────────────────────
+    function renderUpcoming() {
+      const tasks = TF.getTasks()
+        .filter(t => t.dueDate && t.dueDate >= todayStr && t.status !== 'done')
+        .sort((a,b) => a.dueDate.localeCompare(b.dueDate))
+        .slice(0, 8);
+
+      const el = document.getElementById('upcomingTasks');
+      if (!tasks.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:16px"><p>Sin tareas próximas</p></div>`;
+        return;
+      }
+
+      el.innerHTML = tasks.map(t => {
+        const d = new Date(t.dueDate + 'T00:00:00');
+        const proj = t.projectId ? TF.getProject(t.projectId) : null;
+        const isToday = t.dueDate === todayStr;
+        return `
+          <div class="upcoming-item" onclick="selectDay('${t.dueDate}')" style="cursor:pointer">
+            <div class="upcoming-date-box" style="${isToday ? 'border-color:var(--accent);background:var(--accent-dim)' : ''}">
+              <span class="upcoming-day-num" style="${isToday ? 'color:var(--accent)' : ''}">${d.getDate()}</span>
+              <span class="upcoming-month">${d.toLocaleDateString('es-MX',{month:'short'})}</span>
+            </div>
+            <div class="upcoming-info">
+              <div class="upcoming-title">${t.title}</div>
+              <div class="upcoming-proj">${proj?.name || 'Sin proyecto'} · <span class="badge ${TF.priorityClass[t.priority]}" style="padding:1px 6px">${TF.priorityLabel[t.priority]}</span></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────────
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      renderCalendar();
+    });
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      renderCalendar();
+    });
+    document.getElementById('todayBtn').addEventListener('click', () => {
+      currentYear = new Date().getFullYear();
+      currentMonth = new Date().getMonth();
+      selectDay(todayStr);
+      renderCalendar();
+    });
+
+    // ── Modal ─────────────────────────────────────────────────────────────────
+    function openNew() {
+      const projects = TF.getProjects();
+      document.getElementById('taskProject').innerHTML =
+        '<option value="">Sin proyecto</option>' +
+        projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskPriority').value = 'medium';
+      document.getElementById('taskDue').value = selectedDate || '';
+      document.getElementById('modalOverlay').classList.add('open');
+      document.getElementById('taskTitle').focus();
+    }
+
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+    function saveTask() {
+      const title = document.getElementById('taskTitle').value.trim();
+      if (!title) { showToast('El título es obligatorio', 'error'); return; }
+      TF.createTask({
+        title,
+        priority: document.getElementById('taskPriority').value,
+        status: 'pending',
+        dueDate: document.getElementById('taskDue').value || null,
+        projectId: document.getElementById('taskProject').value || null,
+      });
+      showToast('Tarea creada', 'success');
+      closeModal();
+      renderCalendar();
+      renderUpcoming();
+      if (selectedDate) renderDayTasks(selectedDate);
+    }
+
+    document.getElementById('newTaskBtn').addEventListener('click', openNew);
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    document.getElementById('modalSave').addEventListener('click', saveTask);
+    document.getElementById('modalOverlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    });
+    document.getElementById('taskTitle').addEventListener('keydown', e => { if (e.key === 'Enter') saveTask(); });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    renderCalendar();
+    renderUpcoming();
+    // Auto-select today
+    selectDay(todayStr);
+  </script>
+</body>
+</html>
