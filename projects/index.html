@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de Proyectos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0c0f;
+    --surface: #141418;
+    --surface2: #1c1c22;
+    --border: #2a2a35;
+    --accent: #c8f53c;
+    --accent2: #8b5cf6;
+    --text: #f0f0f5;
+    --text-muted: #6b6b80;
+    --danger: #ff4d6d;
+    --warning: #fbbf24;
+    --radius: 14px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ════════════════════════════════
+     AUTH SCREEN
+  ════════════════════════════════ */
+  #auth-screen {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    background: var(--bg);
+    transition: opacity 0.4s ease;
+  }
+  #auth-screen.hidden { opacity: 0; pointer-events: none; }
+
+  .auth-box {
+    width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.5s cubic-bezier(.16,1,.3,1);
+  }
+  .auth-box::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,245,60,0.15) 0%, transparent 70%);
+  }
+
+  .auth-logo {
+    font-family: var(--font-head);
+    font-size: 28px; font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .auth-logo span { color: var(--text-muted); }
+  .auth-subtitle {
+    font-size: 12px; color: var(--text-muted);
+    margin-bottom: 36px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .tabs {
+    display: flex; gap: 4px;
+    background: var(--surface2);
+    border-radius: 10px; padding: 4px;
+    margin-bottom: 28px;
+  }
+  .tab-btn {
+    flex: 1; padding: 8px;
+    border: none; border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 13px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  .auth-panel { display: none; }
+  .auth-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+  .user-list {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 240px; overflow-y: auto;
+    margin-bottom: 16px;
+  }
+  .user-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .user-item:hover { border-color: var(--accent); background: rgba(200,245,60,0.05); }
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head); font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 14px; font-weight: 500; flex: 1; }
+  .user-count { font-size: 11px; color: var(--text-muted); }
+  .user-delete {
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 16px; padding: 4px;
+    border-radius: 6px; transition: all 0.2s; line-height: 1;
+  }
+  .user-delete:hover { color: var(--danger); background: rgba(255,77,109,0.1); }
+
+  .empty-users {
+    text-align: center; color: var(--text-muted);
+    font-size: 12px; padding: 24px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  label {
+    display: block; font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+  }
+
+  input[type="text"], textarea, input[type="date"] {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus,
+  textarea:focus,
+  input[type="date"]:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 90px; }
+
+  .form-group { margin-bottom: 20px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px;
+    border: none; border-radius: 10px;
+    font-family: var(--font-mono); font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+    font-weight: 500;
+  }
+  .btn-primary {
+    background: var(--accent); color: var(--bg);
+    width: 100%;
+  }
+  .btn-primary:hover { background: #d4ff4a; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(255,77,109,0.15); border: 1px solid var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger); color: #fff; }
+  .btn-sm { padding: 8px 14px; font-size: 12px; border-radius: 8px; }
+
+  /* ════════════════════════════════
+     MAIN APP
+  ════════════════════════════════ */
+  #app { display: none; min-height: 100vh; position: relative; z-index: 1; }
+  #app.visible { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex; align-items: center;
+    padding: 16px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(12,12,15,0.8);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 50;
+    gap: 20px;
+  }
+  .topbar-logo {
+    font-family: var(--font-head); font-weight: 800; font-size: 20px;
+    color: var(--accent); letter-spacing: -0.5px;
+  }
+  .topbar-sep { width: 1px; height: 24px; background: var(--border); }
+  .topbar-user {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1;
+  }
+  .topbar-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head); font-weight: 700; font-size: 13px;
+  }
+  .topbar-username { font-size: 14px; font-weight: 500; }
+  .topbar-actions { display: flex; gap: 10px; margin-left: auto; }
+
+  /* MAIN CONTENT */
+  .main {
+    flex: 1;
+    max-width: 1100px; margin: 0 auto; width: 100%;
+    padding: 48px 40px;
+  }
+
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 40px;
+    gap: 20px;
+  }
+  .page-title {
+    font-family: var(--font-head); font-size: 40px; font-weight: 800;
+    letter-spacing: -2px; line-height: 1;
+  }
+  .page-title span { color: var(--accent); }
+  .page-meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+  /* STATS */
+  .stats-row {
+    display: flex; gap: 16px; margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    flex: 1; min-width: 140px;
+    padding: 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    position: relative; overflow: hidden;
+  }
+  .stat-card::after {
+    content: '';
+    position: absolute; bottom: -20px; right: -20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.08;
+  }
+  .stat-card:nth-child(1)::after { background: var(--accent); }
+  .stat-card:nth-child(2)::after { background: var(--accent2); }
+  .stat-card:nth-child(3)::after { background: var(--warning); }
+  .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; }
+  .stat-value { font-family: var(--font-head); font-size: 36px; font-weight: 800; margin-top: 4px; }
+
+  /* SEARCH + FILTER */
+  .toolbar {
+    display: flex; gap: 12px; margin-bottom: 28px; align-items: center;
+    flex-wrap: wrap;
+  }
+  .search-wrap {
+    position: relative; flex: 1; min-width: 200px;
+  }
+  .search-wrap input {
+    padding-left: 40px;
+  }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 14px; pointer-events: none;
+  }
+  .filter-btn {
+    padding: 10px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono); font-size: 12px;
+    cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,245,60,0.07); }
+
+  /* PROJECT GRID */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    position: relative; overflow: hidden;
+    transition: all 0.25s cubic-bezier(.16,1,.3,1);
+    animation: cardIn 0.4s cubic-bezier(.16,1,.3,1) both;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .project-card:hover {
+    border-color: rgba(200,245,60,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(200,245,60,0.1);
+  }
+  .project-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .project-card.color-0::before { background: var(--accent); }
+  .project-card.color-1::before { background: var(--accent2); }
+  .project-card.color-2::before { background: var(--warning); }
+  .project-card.color-3::before { background: #06b6d4; }
+  .project-card.color-4::before { background: #f43f5e; }
+  .project-card.color-5::before { background: #10b981; }
+
+  .project-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .project-title {
+    font-family: var(--font-head); font-size: 18px; font-weight: 700;
+    letter-spacing: -0.5px; line-height: 1.2; flex: 1;
+  }
+  .project-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; transition: all 0.2s;
+  }
+  .icon-btn:hover.edit { border-color: var(--accent); color: var(--accent); background: rgba(200,245,60,0.1); }
+  .icon-btn:hover.del { border-color: var(--danger); color: var(--danger); background: rgba(255,77,109,0.1); }
+
+  .project-desc {
+    font-size: 13px; color: var(--text-muted); line-height: 1.6;
+    flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .project-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .project-date {
+    font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .project-date-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .date-past .project-date-dot { background: var(--danger); }
+  .date-soon .project-date-dot { background: var(--warning); }
+  .date-ok .project-date-dot { background: var(--accent); }
+
+  .project-id {
+    font-size: 10px; color: var(--text-muted);
+    background: var(--surface2); padding: 3px 8px; border-radius: 6px;
+    font-family: var(--font-mono);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 80px 40px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    grid-column: 1 / -1;
+  }
+  .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state-title {
+    font-family: var(--font-head); font-size: 22px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .empty-state-text { font-size: 13px; color: var(--text-muted); }
+
+  /* ════════════════════════════════
+     MODAL
+  ════════════════════════════════ */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%; max-width: 520px;
+    padding: 36px;
+    transform: scale(0.95) translateY(20px);
+    transition: transform 0.3s cubic-bezier(.16,1,.3,1);
+    position: relative;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-backdrop.open .modal { transform: scale(1) translateY(0); }
+  .modal-title {
+    font-family: var(--font-head); font-size: 22px; font-weight: 800;
+    margin-bottom: 28px; letter-spacing: -0.5px;
+  }
+  .modal-title span { color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted); width: 32px; height: 32px;
+    border-radius: 8px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* CONFIRM MODAL */
+  .confirm-icon { font-size: 40px; margin-bottom: 12px; }
+  .confirm-msg { color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-bottom: 8px; }
+
+  /* TOAST */
+  #toast-container {
+    position: fixed; bottom: 32px; right: 32px;
+    z-index: 999; display: flex; flex-direction: column; gap: 10px;
+  }
+  .toast {
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    animation: toastIn 0.3s cubic-bezier(.16,1,.3,1);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    min-width: 240px;
+  }
+  .toast.success { border-color: var(--accent); }
+  .toast.error { border-color: var(--danger); }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .toast.success .toast-dot { background: var(--accent); }
+  .toast.error .toast-dot { background: var(--danger); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ANIMATIONS */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(30px); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .topbar { padding: 12px 20px; }
+    .main { padding: 32px 20px; }
+    .page-title { font-size: 28px; }
+    .page-header { flex-direction: column; align-items: flex-start; }
+    .auth-box { width: 100%; padding: 36px 28px; }
+    #toast-container { left: 20px; right: 20px; bottom: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">projeq<span>.</span></div>
+    <div class="auth-subtitle">Gestor de proyectos personal</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Iniciar sesión</button>
+      <button class="tab-btn" onclick="switchTab('register')">Nuevo usuario</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="panel-login">
+      <div id="users-list-wrap"></div>
+      <div id="no-users" style="display:none">
+        <div class="empty-users">Aún no hay usuarios. Crea uno nuevo →</div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="auth-panel" id="panel-register">
+      <div class="form-group">
+        <label>Nombre de usuario</label>
+        <input type="text" id="reg-name" placeholder="Ej: María García" maxlength="30">
+      </div>
+      <button class="btn btn-primary" onclick="createUser()">✦ Crear cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app">
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <div class="topbar-logo">projeq.</div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-user">
+      <div class="topbar-avatar" id="topbar-avatar"></div>
+      <span class="topbar-username" id="topbar-username"></span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-secondary btn-sm" onclick="logout()">↩ Salir</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Mis <span>proyectos</span></div>
+        <div class="page-meta" id="page-meta"></div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal()">
+        ＋ Nuevo proyecto
+      </button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Próximos</div>
+        <div class="stat-value" id="stat-upcoming" style="color:var(--accent)">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Vencidos</div>
+        <div class="stat-value" id="stat-overdue" style="color:var(--danger)">0</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" placeholder="Buscar proyectos..." oninput="renderProjects()">
+      </div>
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Todos</button>
+      <button class="filter-btn" data-filter="upcoming" onclick="setFilter('upcoming', this)">Próximos</button>
+      <button class="filter-btn" data-filter="overdue" onclick="setFilter('overdue', this)">Vencidos</button>
+    </div>
+
+    <!-- GRID -->
+    <div class="projects-grid" id="projects-grid"></div>
+  </main>
+</div>
+
+<!-- ══ MODAL: CREAR/EDITAR ══ -->
+<div class="modal-backdrop" id="modal-project" onclick="closeOnBackdrop(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title">Nuevo <span>proyecto</span></div>
+    <div class="form-group">
+      <label>Título *</label>
+      <input type="text" id="proj-title" placeholder="Nombre del proyecto" maxlength="60">
+    </div>
+    <div class="form-group">
+      <label>Descripción</label>
+      <textarea id="proj-desc" placeholder="¿De qué trata este proyecto?"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Fecha límite *</label>
+      <input type="date" id="proj-date">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()" style="flex:1">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProject()" style="flex:2" id="save-btn">Guardar proyecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: CONFIRMAR ELIMINAR ══ -->
+<div class="modal-backdrop" id="modal-confirm" onclick="closeConfirmOnBackdrop(event)">
+  <div class="modal" style="max-width:400px; text-align:center">
+    <div class="confirm-icon">🗑️</div>
+    <div class="modal-title" style="font-size:18px">Eliminar proyecto</div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()" style="flex:1">Cancelar</button>
+      <button class="btn btn-danger" onclick="confirmDelete()" style="flex:1">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div id="toast-container"></div>
+
+<script>
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let currentUser = null;
+let editingId   = null;
+let deletingId  = null;
+let activeFilter = 'all';
+
+const COLORS = ['#c8f53c','#8b5cf6','#fbbf24','#06b6d4','#f43f5e','#10b981'];
+
+/* ══════════════════════════════════════
+   STORAGE HELPERS
+══════════════════════════════════════ */
+function getUsers()         { return JSON.parse(localStorage.getItem('pq_users')  || '[]'); }
+function saveUsers(u)       { localStorage.setItem('pq_users', JSON.stringify(u)); }
+function getProjects(uid)   { return JSON.parse(localStorage.getItem(`pq_proj_${uid}`) || '[]'); }
+function saveProjects(uid, p){ localStorage.setItem(`pq_proj_${uid}`, JSON.stringify(p)); }
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+/* ══════════════════════════════════════
+   AUTH
+══════════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+  if (tab === 'login') renderUserList();
+}
+
+function renderUserList() {
+  const users = getUsers();
+  const wrap  = document.getElementById('users-list-wrap');
+  const noU   = document.getElementById('no-users');
+  if (!users.length) {
+    wrap.innerHTML = '';
+    noU.style.display = 'block';
+    return;
+  }
+  noU.style.display = 'none';
+  wrap.innerHTML = `
+    <label style="margin-bottom:12px">Selecciona tu usuario</label>
+    <div class="user-list">
+      ${users.map(u => `
+        <div class="user-item" onclick="loginAs('${u.id}')">
+          <div class="user-avatar" style="background:${u.color}20;color:${u.color}">${u.name[0].toUpperCase()}</div>
+          <span class="user-name">${escHtml(u.name)}</span>
+          <span class="user-count">${getProjects(u.id).length} proy.</span>
+          <button class="user-delete" onclick="deleteUser(event,'${u.id}')">✕</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function createUser() {
+  const name = document.getElementById('reg-name').value.trim();
+  if (!name) return toast('Escribe un nombre de usuario', 'error');
+  const users = getUsers();
+  if (users.find(u => u.name.toLowerCase() === name.toLowerCase()))
+    return toast('Ese nombre ya existe', 'error');
+  const color = COLORS[users.length % COLORS.length];
+  const user  = { id: uid(), name, color };
+  users.push(user);
+  saveUsers(users);
+  document.getElementById('reg-name').value = '';
+  toast(`¡Bienvenido, ${name}!`, 'success');
+  loginAs(user.id);
+}
+
+function deleteUser(e, id) {
+  e.stopPropagation();
+  const users = getUsers().filter(u => u.id !== id);
+  saveUsers(users);
+  localStorage.removeItem(`pq_proj_${id}`);
+  renderUserList();
+  toast('Usuario eliminado', 'success');
+}
+
+function loginAs(id) {
+  const users = getUsers();
+  currentUser = users.find(u => u.id === id);
+  if (!currentUser) return;
+
+  // Topbar
+  document.getElementById('topbar-username').textContent = currentUser.name;
+  const av = document.getElementById('topbar-avatar');
+  av.textContent = currentUser.name[0].toUpperCase();
+  av.style.background = currentUser.color + '25';
+  av.style.color = currentUser.color;
+
+  // Hide auth, show app
+  document.getElementById('auth-screen').classList.add('hidden');
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  setTimeout(() => app.classList.add('visible'), 10);
+
+  renderProjects();
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').classList.remove('hidden');
+  activeFilter = 'all';
+  document.getElementById('search-input').value = '';
+  renderUserList();
+  switchTab('login');
+}
+
+/* ══════════════════════════════════════
+   PROJECTS
+══════════════════════════════════════ */
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProjects();
+}
+
+function getDateStatus(dateStr) {
+  if (!dateStr) return 'ok';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(dateStr + 'T00:00:00');
+  const diff = Math.ceil((d - today) / 86400000);
+  if (diff < 0)  return 'past';
+  if (diff <= 7) return 'soon';
+  return 'ok';
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function renderProjects() {
+  if (!currentUser) return;
+  const projects = getProjects(currentUser.id);
+  const q = document.getElementById('search-input').value.toLowerCase();
+
+  const now = new Date(); now.setHours(0,0,0,0);
+
+  let filtered = projects.filter(p => {
+    const matchQ = !q || p.title.toLowerCase().includes(q) || (p.desc||'').toLowerCase().includes(q);
+    if (!matchQ) return false;
+    if (activeFilter === 'all') return true;
+    const status = getDateStatus(p.date);
+    if (activeFilter === 'overdue')  return status === 'past';
+    if (activeFilter === 'upcoming') return status === 'soon' || status === 'ok';
+    return true;
+  });
+
+  // Stats
+  const upcoming = projects.filter(p => { const s = getDateStatus(p.date); return s === 'soon'; }).length;
+  const overdue  = projects.filter(p => getDateStatus(p.date) === 'past').length;
+  document.getElementById('stat-total').textContent    = projects.length;
+  document.getElementById('stat-upcoming').textContent = upcoming;
+  document.getElementById('stat-overdue').textContent  = overdue;
+  document.getElementById('page-meta').textContent     = `Bienvenido de nuevo, ${currentUser.name} ·  ${new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'})}`;
+
+  const grid = document.getElementById('projects-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📂</div>
+        <div class="empty-state-title">${q || activeFilter !== 'all' ? 'Sin resultados' : 'Sin proyectos aún'}</div>
+        <div class="empty-state-text">${q || activeFilter !== 'all' ? 'Prueba con otros filtros o términos.' : 'Crea tu primer proyecto con el botón superior.'}</div>
+      </div>`;
+    return;
+  }
+
+  // Sort by date
+  filtered = filtered.slice().sort((a,b) => {
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return new Date(a.date) - new Date(b.date);
+  });
+
+  grid.innerHTML = filtered.map((p, i) => {
+    const status   = getDateStatus(p.date);
+    const colorIdx = projects.indexOf(p) % 6;
+    const statusClass = status === 'past' ? 'date-past' : status === 'soon' ? 'date-soon' : 'date-ok';
+    const statusLabel = status === 'past' ? 'Vencido' : status === 'soon' ? 'Próximo' : 'En tiempo';
+    return `
+      <div class="project-card color-${colorIdx}" style="animation-delay:${i*0.05}s">
+        <div class="project-header">
+          <div class="project-title">${escHtml(p.title)}</div>
+          <div class="project-actions">
+            <button class="icon-btn edit" title="Editar" onclick="openEdit('${p.id}')">✎</button>
+            <button class="icon-btn del"  title="Eliminar" onclick="openConfirm('${p.id}')">⌫</button>
+          </div>
+        </div>
+        <div class="project-desc">${escHtml(p.desc || 'Sin descripción.')}</div>
+        <div class="project-footer ${statusClass}">
+          <div class="project-date">
+            <div class="project-date-dot"></div>
+            <span>${statusLabel} · ${formatDate(p.date)}</span>
+          </div>
+          <div class="project-id">#${p.id.slice(-4).toUpperCase()}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   MODAL: CREAR / EDITAR
+══════════════════════════════════════ */
+function openModal() {
+  editingId = null;
+  document.getElementById('modal-title').innerHTML = 'Nuevo <span>proyecto</span>';
+  document.getElementById('save-btn').textContent = 'Guardar proyecto';
+  document.getElementById('proj-title').value = '';
+  document.getElementById('proj-desc').value  = '';
+  document.getElementById('proj-date').value  = '';
+  document.getElementById('modal-project').classList.add('open');
+}
+
+function openEdit(id) {
+  const projects = getProjects(currentUser.id);
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('modal-title').innerHTML = 'Editar <span>proyecto</span>';
+  document.getElementById('save-btn').textContent = 'Actualizar proyecto';
+  document.getElementById('proj-title').value = p.title;
+  document.getElementById('proj-desc').value  = p.desc || '';
+  document.getElementById('proj-date').value  = p.date || '';
+  document.getElementById('modal-project').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-project').classList.remove('open');
+}
+
+function closeOnBackdrop(e) {
+  if (e.target === document.getElementById('modal-project')) closeModal();
+}
+
+function saveProject() {
+  const title = document.getElementById('proj-title').value.trim();
+  const desc  = document.getElementById('proj-desc').value.trim();
+  const date  = document.getElementById('proj-date').value;
+
+  if (!title) return toast('El título es obligatorio', 'error');
+  if (!date)  return toast('La fecha es obligatoria', 'error');
+
+  let projects = getProjects(currentUser.id);
+
+  if (editingId) {
+    const idx = projects.findIndex(p => p.id === editingId);
+    if (idx !== -1) {
+      projects[idx] = { ...projects[idx], title, desc, date, updatedAt: Date.now() };
+      toast('Proyecto actualizado', 'success');
+    }
+  } else {
+    projects.unshift({ id: uid(), title, desc, date, createdAt: Date.now() });
+    toast('Proyecto creado', 'success');
+  }
+
+  saveProjects(currentUser.id, projects);
+  closeModal();
+  renderProjects();
+}
+
+/* ══════════════════════════════════════
+   MODAL: CONFIRMAR ELIMINAR
+══════════════════════════════════════ */
+function openConfirm(id) {
+  const projects = getProjects(currentUser.id);
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  deletingId = id;
+  document.getElementById('confirm-msg').textContent = `¿Seguro que deseas eliminar "${p.title}"? Esta acción no se puede deshacer.`;
+  document.getElementById('modal-confirm').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('modal-confirm').classList.remove('open');
+  deletingId = null;
+}
+
+function closeConfirmOnBackdrop(e) {
+  if (e.target === document.getElementById('modal-confirm')) closeConfirm();
+}
+
+function confirmDelete() {
+  if (!deletingId) return;
+  let projects = getProjects(currentUser.id).filter(p => p.id !== deletingId);
+  saveProjects(currentUser.id, projects);
+  toast('Proyecto eliminado', 'success');
+  closeConfirm();
+  renderProjects();
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+function toast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="toast-dot"></div><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'toastOut 0.3s ease forwards';
+    setTimeout(() => t.remove(), 300);
+  }, 2800);
+}
+
+/* ══════════════════════════════════════
+   UTILS
+══════════════════════════════════════ */
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeConfirm(); }
+});
+
+// Init
+renderUserList();
+</script>
+</body>
+</html>
