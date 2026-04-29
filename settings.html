@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    // Aplica el tema guardado ANTES de pintar para evitar flash
+    (function () {
+      try {
+        var t = localStorage.getItem('taskflow_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <title>Configuración · TaskFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/settings.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar-slot"></aside>
+
+    <main class="main">
+      <div class="page-header">
+        <div class="page-title-block">
+          <div class="eyebrow">— Ajustes</div>
+          <h1 class="page-title"><em>Configuración</em></h1>
+          <p class="page-subtitle">Gestiona tu información, exporta o importa datos, y personaliza tu experiencia.</p>
+        </div>
+      </div>
+
+      <!-- Datos -->
+      <section class="card settings-section">
+        <h2 class="card-title">Datos</h2>
+        <p class="card-subtitle">Tus proyectos y tareas se guardan en LocalStorage. Puedes exportarlos como respaldo o importarlos en otro navegador.</p>
+        <div class="settings-actions">
+          <button class="btn" id="btn-export">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar JSON
+          </button>
+          <label class="btn" for="import-file" style="cursor: pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Importar JSON
+          </label>
+          <input type="file" id="import-file" accept="application/json,.json" style="display:none;" />
+          <button class="btn btn-danger" id="btn-clear">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Eliminar todos los datos
+          </button>
+        </div>
+        <div class="settings-stats" id="data-stats"></div>
+      </section>
+
+      <!-- Apariencia -->
+      <section class="card settings-section">
+        <h2 class="card-title">Apariencia</h2>
+        <p class="card-subtitle">Cambia entre tema claro y oscuro.</p>
+        <div class="theme-toggles">
+          <button class="theme-option" data-theme-set="light">
+            <div class="theme-preview theme-preview-light"></div>
+            <span>Claro</span>
+          </button>
+          <button class="theme-option" data-theme-set="dark">
+            <div class="theme-preview theme-preview-dark"></div>
+            <span>Oscuro</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Usuarios -->
+      <section class="card settings-section">
+        <h2 class="card-title">Perfiles</h2>
+        <p class="card-subtitle">Crea perfiles simples (solo nombre) para asignar tareas. Esto es simulado, no es autenticación real.</p>
+        <form id="user-form" class="user-add-form">
+          <input type="text" class="input" id="user-name" placeholder="Nombre del perfil" required />
+          <button type="submit" class="btn btn-primary">Añadir</button>
+        </form>
+        <div id="users-list" class="users-list"></div>
+      </section>
+
+      <!-- Acerca -->
+      <section class="card settings-section">
+        <h2 class="card-title">Acerca de</h2>
+        <p style="color: var(--text-soft); font-size: 14px; line-height: 1.7;">
+          <strong style="font-family: var(--font-display); font-size: 18px;">TaskFlow v1.0</strong><br/>
+          Gestor de proyectos personales construido con HTML, CSS y JavaScript puros.<br/>
+          Persistencia local mediante LocalStorage. Sin backend, sin tracking.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

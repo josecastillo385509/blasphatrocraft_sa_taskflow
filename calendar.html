@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    // Aplica el tema guardado ANTES de pintar para evitar flash
+    (function () {
+      try {
+        var t = localStorage.getItem('taskflow_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <title>Calendario · TaskFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/calendar.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar-slot"></aside>
+
+    <main class="main">
+      <div class="page-header">
+        <div class="page-title-block">
+          <div class="eyebrow">— Vista mensual</div>
+          <h1 class="page-title"><em>Calendario</em></h1>
+          <p class="page-subtitle">Visualiza tus tareas según su fecha límite. Identifica picos de carga y plazos cercanos.</p>
+        </div>
+        <div class="cal-controls">
+          <button class="icon-btn" id="cal-prev" title="Mes anterior">‹</button>
+          <span class="cal-current" id="cal-current"></span>
+          <button class="icon-btn" id="cal-next" title="Mes siguiente">›</button>
+          <button class="btn btn-sm" id="cal-today">Hoy</button>
+        </div>
+      </div>
+
+      <div class="cal-wrapper">
+        <div class="cal-weekdays">
+          <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- Detalles del día -->
+      <section class="card cal-day-details" id="cal-day-details" style="display:none;">
+        <h2 class="card-title" id="cal-day-title">Detalles</h2>
+        <div id="cal-day-tasks"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/calendar.js"></script>
+</body>
+</html>

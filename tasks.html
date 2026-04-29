@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    // Aplica el tema guardado ANTES de pintar para evitar flash
+    (function () {
+      try {
+        var t = localStorage.getItem('taskflow_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <title>Tareas · TaskFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/tasks.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar-slot"></aside>
+
+    <main class="main">
+      <div class="page-header">
+        <div class="page-title-block">
+          <div class="eyebrow">— Lo que hay que hacer</div>
+          <h1 class="page-title"><em>Tareas</em></h1>
+          <p class="page-subtitle">Crea, prioriza y avanza. Filtra por proyecto, estado o prioridad para enfocarte en lo que importa.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-new-task">+ Nueva tarea</button>
+      </div>
+
+      <!-- Filtros -->
+      <section class="filters">
+        <div class="filter-group">
+          <label>Proyecto</label>
+          <select class="select" id="filter-project">
+            <option value="">Todos los proyectos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Estado</label>
+          <select class="select" id="filter-status">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_progreso">En progreso</option>
+            <option value="terminado">Terminado</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Prioridad</label>
+          <select class="select" id="filter-priority">
+            <option value="">Todas las prioridades</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+        <div class="filter-group filter-search">
+          <label>Buscar</label>
+          <input type="text" class="input" id="filter-search" placeholder="Buscar por título..." />
+        </div>
+      </section>
+
+      <div id="tasks-container"></div>
+    </main>
+  </div>
+
+  <!-- Modal: Crear/Editar tarea -->
+  <div class="modal-backdrop" id="task-modal">
+    <div class="modal" role="dialog">
+      <div class="modal-header">
+        <h2 class="modal-title" id="task-modal-title">Nueva tarea</h2>
+      </div>
+      <form id="task-form">
+        <input type="hidden" id="task-id" />
+        <div class="field">
+          <label for="task-title">Título</label>
+          <input type="text" id="task-title" class="input" placeholder="¿Qué hay que hacer?" required />
+        </div>
+        <div class="field">
+          <label for="task-description">Descripción</label>
+          <textarea id="task-description" class="textarea" placeholder="Detalles adicionales (opcional)"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="task-project">Proyecto</label>
+            <select id="task-project" class="select" required></select>
+          </div>
+          <div class="field">
+            <label for="task-assignee">Asignado a</label>
+            <select id="task-assignee" class="select">
+              <option value="">— Sin asignar —</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="task-priority">Prioridad</label>
+            <select id="task-priority" class="select">
+              <option value="baja">Baja</option>
+              <option value="media" selected>Media</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="task-status">Estado</label>
+            <select id="task-status" class="select">
+              <option value="pendiente">Pendiente</option>
+              <option value="en_progreso">En progreso</option>
+              <option value="terminado">Terminado</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="task-due">Fecha límite</label>
+          <input type="date" id="task-due" class="input" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" data-close="task-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="task-submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/tasks.js"></script>
+</body>
+</html>

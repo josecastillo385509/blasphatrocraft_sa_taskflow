@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    // Aplica el tema guardado ANTES de pintar para evitar flash
+    (function () {
+      try {
+        var t = localStorage.getItem('taskflow_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <title>Proyectos · TaskFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/projects.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar-slot"></aside>
+
+    <main class="main">
+      <div class="page-header">
+        <div class="page-title-block">
+          <div class="eyebrow">— Espacios de trabajo</div>
+          <h1 class="page-title"><em>Proyectos</em></h1>
+          <p class="page-subtitle">Crea, organiza y mantén tus iniciativas. Cada proyecto agrupa sus propias tareas.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-new-project">+ Nuevo proyecto</button>
+      </div>
+
+      <div id="projects-grid" class="projects-grid"></div>
+    </main>
+  </div>
+
+  <!-- Modal: Crear/Editar proyecto -->
+  <div class="modal-backdrop" id="project-modal">
+    <div class="modal" role="dialog">
+      <div class="modal-header">
+        <h2 class="modal-title" id="project-modal-title">Nuevo proyecto</h2>
+      </div>
+      <form id="project-form">
+        <input type="hidden" id="project-id" />
+        <div class="field">
+          <label for="project-name">Nombre</label>
+          <input type="text" id="project-name" class="input" placeholder="ej. Rediseño del portafolio" required />
+        </div>
+        <div class="field">
+          <label for="project-description">Descripción</label>
+          <textarea id="project-description" class="textarea" placeholder="¿De qué trata este proyecto?"></textarea>
+        </div>
+        <div class="field">
+          <label>Color</label>
+          <div class="color-picker" id="color-picker"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" data-close="project-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="project-submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/projects.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    // Aplica el tema guardado ANTES de pintar para evitar flash
+    (function () {
+      try {
+        var t = localStorage.getItem('taskflow_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <title>Estadísticas · TaskFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/stats.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar-slot"></aside>
+
+    <main class="main">
+      <div class="page-header">
+        <div class="page-title-block">
+          <div class="eyebrow">— Métricas y avance</div>
+          <h1 class="page-title"><em>Estadísticas</em></h1>
+          <p class="page-subtitle">Distribución, prioridades y avance por proyecto. Todo en un vistazo.</p>
+        </div>
+      </div>
+
+      <!-- Resumen numérico -->
+      <section class="stats-summary" id="stats-summary"></section>
+
+      <!-- Gráficos -->
+      <div class="charts-grid">
+        <section class="card">
+          <h2 class="card-title">Distribución por estado</h2>
+          <p class="card-subtitle">Cómo se reparten tus tareas actualmente.</p>
+          <div class="donut-container">
+            <svg id="donut-status" viewBox="0 0 200 200" width="200" height="200"></svg>
+            <div class="donut-legend" id="donut-status-legend"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">Por prioridad</h2>
+          <p class="card-subtitle">Carga relativa por nivel de prioridad.</p>
+          <div class="donut-container">
+            <svg id="donut-priority" viewBox="0 0 200 200" width="200" height="200"></svg>
+            <div class="donut-legend" id="donut-priority-legend"></div>
+          </div>
+        </section>
+
+        <section class="card chart-wide">
+          <h2 class="card-title">Avance por proyecto</h2>
+          <p class="card-subtitle">Porcentaje de tareas terminadas en cada proyecto.</p>
+          <div id="project-progress-chart"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/stats.js"></script>
+</body>
+</html>

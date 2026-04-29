@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    // Aplica el tema guardado ANTES de pintar para evitar flash
+    (function () {
+      try {
+        var t = localStorage.getItem('taskflow_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <title>Dashboard · TaskFlow</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar-slot"></aside>
+
+    <main class="main">
+      <div class="page-header">
+        <div class="page-title-block">
+          <div class="eyebrow">— Panel principal</div>
+          <h1 class="page-title">Buen día. <em>Sigamos.</em></h1>
+          <p class="page-subtitle">Una mirada general de tu trabajo: proyectos activos, tareas pendientes y lo último que has movido.</p>
+        </div>
+        <div class="header-actions">
+          <a href="projects.html" class="btn">Ver proyectos</a>
+          <a href="tasks.html" class="btn btn-primary">+ Nueva tarea</a>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <section class="kpi-grid">
+        <article class="kpi-card">
+          <div class="kpi-label">Proyectos</div>
+          <div class="kpi-value" id="kpi-projects">0</div>
+          <div class="kpi-foot">en total</div>
+        </article>
+        <article class="kpi-card kpi-pending">
+          <div class="kpi-label">Pendientes</div>
+          <div class="kpi-value" id="kpi-pending">0</div>
+          <div class="kpi-foot">por hacer</div>
+        </article>
+        <article class="kpi-card kpi-progress">
+          <div class="kpi-label">En progreso</div>
+          <div class="kpi-value" id="kpi-progress">0</div>
+          <div class="kpi-foot">en curso</div>
+        </article>
+        <article class="kpi-card kpi-done">
+          <div class="kpi-label">Completadas</div>
+          <div class="kpi-value" id="kpi-done">0</div>
+          <div class="kpi-foot">finalizadas</div>
+        </article>
+      </section>
+
+      <div class="dash-grid">
+        <!-- Resumen visual -->
+        <section class="card dash-overview">
+          <h2 class="card-title">Avance general</h2>
+          <p class="card-subtitle">Distribución del estado de tus tareas.</p>
+          <div class="overview-bar" id="overview-bar">
+            <div class="empty-bar">Sin tareas registradas</div>
+          </div>
+          <div class="overview-legend" id="overview-legend"></div>
+        </section>
+
+        <!-- Actividad reciente -->
+        <section class="card dash-activity">
+          <h2 class="card-title">Actividad reciente</h2>
+          <p class="card-subtitle">Las últimas acciones que has registrado.</p>
+          <ul class="activity-list" id="activity-list"></ul>
+        </section>
+
+        <!-- Próximas fechas -->
+        <section class="card dash-upcoming">
+          <h2 class="card-title">Próximas fechas</h2>
+          <p class="card-subtitle">Tareas con fecha límite cercana.</p>
+          <ul class="upcoming-list" id="upcoming-list"></ul>
+        </section>
+
+        <!-- Proyectos top -->
+        <section class="card dash-top-projects">
+          <h2 class="card-title">Tus proyectos</h2>
+          <p class="card-subtitle">Avance individual.</p>
+          <div id="top-projects-list"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
