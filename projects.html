@@ -1,471 +1,75 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light" data-page="projects">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TaskFlow — Proyectos</title>
-  <link rel="stylesheet" href="taskflow.css">
-  <style>
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-    }
-
-    .project-card {
-      background: var(--bg-1);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0;
-      overflow: hidden;
-      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-      display: flex;
-      flex-direction: column;
-      animation: fadeIn 0.25s ease;
-    }
-    .project-card:hover {
-      border-color: var(--border-light);
-      transform: translateY(-3px);
-      box-shadow: var(--shadow);
-    }
-
-    .project-card-top {
-      height: 5px;
-    }
-
-    .project-card-body {
-      padding: 20px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .project-card-name {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      letter-spacing: -0.3px;
-    }
-
-    .project-card-desc {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-      flex: 1;
-      line-height: 1.5;
-    }
-
-    .project-card-stats {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 14px;
-    }
-
-    .proj-stat {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .proj-stat-val {
-      font-size: 1.1rem;
-      font-weight: 700;
-      font-family: var(--font-mono);
-    }
-    .proj-stat-label {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-    }
-
-    .project-card-progress {
-      margin-bottom: 14px;
-    }
-    .progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-      font-family: var(--font-mono);
-    }
-
-    .project-card-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      border-top: 1px solid var(--border);
-      padding: 12px 20px;
-      background: var(--bg-0);
-    }
-
-    .color-picker-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-    .color-option {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: transform var(--transition), border-color var(--transition);
-    }
-    .color-option:hover { transform: scale(1.15); }
-    .color-option.selected { border-color: #fff; transform: scale(1.15); }
-
-    .filter-bar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .users-section {
-      background: var(--bg-1);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-top: 32px;
-    }
-    .users-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-    .user-list { display: flex; flex-wrap: wrap; gap: 10px; }
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--bg-2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 6px 12px 6px 6px;
-      font-size: 0.82rem;
-    }
-    .user-avatar {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #000;
-      flex-shrink: 0;
-    }
-    .user-del {
-      background: none; border: none; color: var(--text-muted);
-      cursor: pointer; font-size: 0.85rem; margin-left: 4px;
-      padding: 0; transition: color var(--transition);
-    }
-    .user-del:hover { color: var(--red); }
-
-    @media (max-width: 640px) {
-      .projects-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proyectos — TaskFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div id="navWrap"></div>
 
+<div class="app" id="app">
   <main class="main">
-    <div class="container">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Ges<span>tión de</span> Proyectos</h1>
-          <p class="page-subtitle" id="projCount"></p>
-        </div>
-        <button class="btn btn-primary" id="newProjBtn">+ Nuevo Proyecto</button>
+    <div id="topbar-mount"></div>
+    <div class="content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; gap:12px; flex-wrap:wrap;">
+        <p style="color:var(--text-muted); font-size:14px; max-width:520px;">
+          Organiza tu trabajo en proyectos. Cada proyecto agrupa tareas y muestra su progreso.
+        </p>
+        <button class="btn btn-accent" id="btn-new-project">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo proyecto
+        </button>
       </div>
-
-      <!-- Filter Bar -->
-      <div class="filter-bar">
-        <div class="search-wrap" style="flex:1;max-width:300px">
-          <span class="search-icon">⌕</span>
-          <input type="text" class="form-input search-input" id="searchInput" placeholder="Buscar proyecto...">
-        </div>
-        <span id="filterCount" class="text-muted" style="font-size:0.8rem;font-family:var(--font-mono)"></span>
-      </div>
-
-      <!-- Grid -->
-      <div class="projects-grid" id="projectsGrid"></div>
-
-      <!-- Users section -->
-      <div class="users-section">
-        <div class="users-header">
-          <span class="section-title" style="font-size:0.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)">Usuarios del Equipo</span>
-          <button class="btn btn-secondary btn-sm" id="addUserBtn">+ Añadir Usuario</button>
-        </div>
-        <div class="user-list" id="userList"></div>
-      </div>
+      <div id="projects-container"></div>
     </div>
   </main>
+</div>
 
-  <!-- Modal: Project Form -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title" id="modalTitle">Nuevo Proyecto</span>
-        <button class="modal-close" id="modalClose">✕</button>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Nombre del Proyecto *</label>
-        <input type="text" class="form-input" id="projName" placeholder="Mi Proyecto...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Descripción</label>
-        <textarea class="form-textarea" id="projDesc" placeholder="Describe el proyecto..."></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Color</label>
-        <div class="color-picker-row" id="colorPicker"></div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="modalCancel">Cancelar</button>
-        <button class="btn btn-primary" id="modalSave">Guardar</button>
-      </div>
+<!-- Modal Proyecto -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modal-project-title">Nuevo <em>proyecto</em></h3>
+      <button class="icon-btn-sm" data-close-modal>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
     </div>
-  </div>
-
-  <!-- Modal: Add User -->
-  <div class="modal-overlay" id="userModalOverlay">
-    <div class="modal" style="max-width:380px">
-      <div class="modal-header">
-        <span class="modal-title">Nuevo Usuario</span>
-        <button class="modal-close" id="userModalClose">✕</button>
+    <div class="modal-body">
+      <div class="field" data-field="project-name">
+        <label class="field-label">Nombre <span class="req">*</span></label>
+        <input class="field-input" id="project-name" maxlength="80" placeholder="Ej: Lanzamiento del sitio web">
+        <div class="field-error">El nombre es obligatorio.</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Nombre *</label>
-        <input type="text" class="form-input" id="userName" placeholder="Nombre del usuario...">
+      <div class="field">
+        <label class="field-label">Descripción</label>
+        <textarea class="field-textarea" id="project-desc" maxlength="240" placeholder="¿De qué trata este proyecto?"></textarea>
       </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="userModalCancel">Cancelar</button>
-        <button class="btn btn-primary" id="userModalSave">Añadir</button>
-      </div>
-    </div>
-  </div>
-
-  <script src="taskflow.js"></script>
-  <script>
-    let editingId = null;
-    let selectedColor = TF.PROJECT_COLORS[0];
-    let searchQuery = '';
-
-    // ── Color Picker ──────────────────────────────────────────────────────────
-    function renderColorPicker() {
-      document.getElementById('colorPicker').innerHTML = TF.PROJECT_COLORS.map(c => `
-        <div class="color-option ${c === selectedColor ? 'selected' : ''}"
-          style="background:${c}"
-          data-color="${c}"
-          onclick="selectColor('${c}')"></div>
-      `).join('');
-    }
-
-    function selectColor(c) {
-      selectedColor = c;
-      renderColorPicker();
-    }
-
-    // ── Render Projects ───────────────────────────────────────────────────────
-    function renderProjects() {
-      const all = TF.getProjects();
-      const filtered = all.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-      const grid = document.getElementById('projectsGrid');
-
-      document.getElementById('projCount').textContent = `${all.length} proyecto${all.length !== 1 ? 's' : ''} en total`;
-      document.getElementById('filterCount').textContent = searchQuery ? `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''}` : '';
-
-      if (!filtered.length) {
-        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-          <div class="empty-state-icon">◈</div>
-          <h3>${all.length ? 'Sin resultados' : 'Sin proyectos'}</h3>
-          <p>${all.length ? 'Prueba con otro término de búsqueda' : 'Crea tu primer proyecto para comenzar'}</p>
-        </div>`;
-        return;
-      }
-
-      grid.innerHTML = filtered.map(p => {
-        const tasks = TF.getTasksByProject(p.id);
-        const pct = TF.getProjectProgress(p.id);
-        const done = tasks.filter(t => t.status === 'done').length;
-        const pending = tasks.filter(t => t.status === 'pending').length;
-        return `
-          <div class="project-card">
-            <div class="project-card-top" style="background:${p.color}"></div>
-            <div class="project-card-body">
-              <div class="project-card-name">${p.name}</div>
-              <div class="project-card-desc">${p.description || '<span style="font-style:italic">Sin descripción</span>'}</div>
-              <div class="project-card-stats">
-                <div class="proj-stat">
-                  <span class="proj-stat-val" style="color:${p.color}">${tasks.length}</span>
-                  <span class="proj-stat-label">Tareas</span>
-                </div>
-                <div class="proj-stat">
-                  <span class="proj-stat-val" style="color:var(--green)">${done}</span>
-                  <span class="proj-stat-label">Hechas</span>
-                </div>
-                <div class="proj-stat">
-                  <span class="proj-stat-val" style="color:var(--text-muted)">${pending}</span>
-                  <span class="proj-stat-label">Pendientes</span>
-                </div>
-              </div>
-              <div class="project-card-progress">
-                <div class="progress-label">
-                  <span>Progreso</span>
-                  <span>${pct}%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width:${pct}%;background:${p.color}"></div>
-                </div>
-              </div>
-              <div style="font-size:0.72rem;color:var(--text-muted);font-family:var(--font-mono)">Creado ${TF.formatDate(p.createdAt)}</div>
-            </div>
-            <div class="project-card-actions">
-              <a href="tasks.html?project=${p.id}" class="btn btn-secondary btn-sm" style="flex:1">◉ Tareas</a>
-              <a href="kanban.html?project=${p.id}" class="btn btn-secondary btn-sm">▦</a>
-              <button class="btn btn-ghost btn-sm" onclick="openEdit('${p.id}')">✎</button>
-              <button class="btn btn-danger btn-sm" onclick="deleteProj('${p.id}')">✕</button>
-            </div>
-          </div>`;
-      }).join('');
-    }
-
-    // ── Render Users ──────────────────────────────────────────────────────────
-    function renderUsers() {
-      const users = TF.getUsers();
-      const colors = ['#f0a500','#3ecf8e','#5b8af0','#f06060','#a78bfa'];
-      const el = document.getElementById('userList');
-      if (!users.length) {
-        el.innerHTML = `<span style="font-size:0.82rem;color:var(--text-muted)">Sin usuarios. Añade miembros del equipo.</span>`;
-        return;
-      }
-      el.innerHTML = users.map((u, i) => `
-        <div class="user-chip">
-          <div class="user-avatar" style="background:${colors[i % colors.length]}">${u.avatar}</div>
-          <span style="font-size:0.85rem;font-weight:500">${u.name}</span>
-          <button class="user-del" onclick="deleteUser('${u.id}')">✕</button>
+      <div class="field">
+        <label class="field-label">Color</label>
+        <div class="color-picker" id="project-color">
+          <div class="color-swatch active" data-color="#C8553D" style="background:#C8553D"></div>
+          <div class="color-swatch" data-color="#4A7BA8" style="background:#4A7BA8"></div>
+          <div class="color-swatch" data-color="#5C8D5A" style="background:#5C8D5A"></div>
+          <div class="color-swatch" data-color="#D4A24A" style="background:#D4A24A"></div>
+          <div class="color-swatch" data-color="#8B6FB7" style="background:#8B6FB7"></div>
+          <div class="color-swatch" data-color="#3D8B8B" style="background:#3D8B8B"></div>
+          <div class="color-swatch" data-color="#B85A8B" style="background:#B85A8B"></div>
         </div>
-      `).join('');
-    }
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn btn-accent" id="project-save">Guardar</button>
+    </div>
+  </div>
+</div>
 
-    // ── Open / Close Modal ────────────────────────────────────────────────────
-    function openNew() {
-      editingId = null;
-      selectedColor = TF.PROJECT_COLORS[0];
-      document.getElementById('modalTitle').textContent = 'Nuevo Proyecto';
-      document.getElementById('projName').value = '';
-      document.getElementById('projDesc').value = '';
-      renderColorPicker();
-      document.getElementById('modalOverlay').classList.add('open');
-      document.getElementById('projName').focus();
-    }
-
-    function openEdit(id) {
-      const p = TF.getProject(id);
-      if (!p) return;
-      editingId = id;
-      selectedColor = p.color;
-      document.getElementById('modalTitle').textContent = 'Editar Proyecto';
-      document.getElementById('projName').value = p.name;
-      document.getElementById('projDesc').value = p.description;
-      renderColorPicker();
-      document.getElementById('modalOverlay').classList.add('open');
-      document.getElementById('projName').focus();
-    }
-
-    function closeModal() {
-      document.getElementById('modalOverlay').classList.remove('open');
-    }
-
-    function saveProject() {
-      const name = document.getElementById('projName').value.trim();
-      if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
-      if (editingId) {
-        TF.updateProject(editingId, { name, description: document.getElementById('projDesc').value, color: selectedColor });
-        showToast('Proyecto actualizado', 'success');
-      } else {
-        TF.createProject({ name, description: document.getElementById('projDesc').value, color: selectedColor });
-        showToast('Proyecto creado', 'success');
-      }
-      closeModal();
-      renderProjects();
-    }
-
-    async function deleteProj(id) {
-      const p = TF.getProject(id);
-      const ok = await confirmDialog('Eliminar proyecto', `¿Eliminar "${p?.name}"? Se eliminarán también sus tareas.`);
-      if (!ok) return;
-      TF.deleteProject(id);
-      showToast('Proyecto eliminado', 'info');
-      renderProjects();
-    }
-
-    // ── Users ─────────────────────────────────────────────────────────────────
-    function openUserModal() {
-      document.getElementById('userName').value = '';
-      document.getElementById('userModalOverlay').classList.add('open');
-      document.getElementById('userName').focus();
-    }
-
-    function closeUserModal() {
-      document.getElementById('userModalOverlay').classList.remove('open');
-    }
-
-    function saveUser() {
-      const name = document.getElementById('userName').value.trim();
-      if (!name) { showToast('El nombre es obligatorio', 'error'); return; }
-      TF.createUser({ name });
-      showToast('Usuario añadido', 'success');
-      closeUserModal();
-      renderUsers();
-    }
-
-    async function deleteUser(id) {
-      const u = TF.getUser(id);
-      const ok = await confirmDialog('Eliminar usuario', `¿Eliminar a "${u?.name}"?`);
-      if (!ok) return;
-      TF.deleteUser(id);
-      showToast('Usuario eliminado', 'info');
-      renderUsers();
-    }
-
-    // ── Events ────────────────────────────────────────────────────────────────
-    document.getElementById('newProjBtn').addEventListener('click', openNew);
-    document.getElementById('modalClose').addEventListener('click', closeModal);
-    document.getElementById('modalCancel').addEventListener('click', closeModal);
-    document.getElementById('modalSave').addEventListener('click', saveProject);
-    document.getElementById('addUserBtn').addEventListener('click', openUserModal);
-    document.getElementById('userModalClose').addEventListener('click', closeUserModal);
-    document.getElementById('userModalCancel').addEventListener('click', closeUserModal);
-    document.getElementById('userModalSave').addEventListener('click', saveUser);
-
-    document.getElementById('searchInput').addEventListener('input', e => {
-      searchQuery = e.target.value;
-      renderProjects();
-    });
-
-    // Enter key in modals
-    document.getElementById('projName').addEventListener('keydown', e => { if (e.key === 'Enter') saveProject(); });
-    document.getElementById('userName').addEventListener('keydown', e => { if (e.key === 'Enter') saveUser(); });
-
-    // Click outside to close
-    document.getElementById('modalOverlay').addEventListener('click', e => {
-      if (e.target === document.getElementById('modalOverlay')) closeModal();
-    });
-    document.getElementById('userModalOverlay').addEventListener('click', e => {
-      if (e.target === document.getElementById('userModalOverlay')) closeUserModal();
-    });
-
-    // ── Check URL param ───────────────────────────────────────────────────────
-    const params = new URLSearchParams(location.search);
-    if (params.get('new') === '1') setTimeout(openNew, 100);
-
-    renderProjects();
-    renderUsers();
-  </script>
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/projects.js"></script>
 </body>
 </html>

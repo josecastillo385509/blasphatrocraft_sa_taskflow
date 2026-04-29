@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" data-page="settings">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuración — TaskFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app" id="app">
+  <main class="main">
+    <div id="topbar-mount"></div>
+    <div class="content">
+      <div class="settings-list">
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-title">Tema oscuro</div>
+            <div class="setting-desc">Cambia entre apariencia clara y oscura.</div>
+          </div>
+          <button class="theme-toggle" id="theme-toggle-2" aria-label="Tema"></button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-title">Almacenamiento</div>
+            <div class="setting-desc">
+              Los datos se guardan en <code style="font-family:var(--font-mono); font-size:12px; color:var(--accent);">localStorage</code> bajo la clave
+              <code style="font-family:var(--font-mono); font-size:12px; color:var(--accent);">taskflow_data_v1</code>.
+            </div>
+          </div>
+          <div style="text-align:right; font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">
+            <div id="storage-size">— KB</div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-title">Exportar datos</div>
+            <div class="setting-desc">Descargar una copia de tus datos en formato JSON.</div>
+          </div>
+          <button class="btn btn-ghost" id="settings-export">Exportar JSON</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-title">Importar datos</div>
+            <div class="setting-desc">Cargar datos desde un archivo JSON. Reemplaza los datos actuales.</div>
+          </div>
+          <button class="btn btn-ghost" id="settings-import">Importar JSON</button>
+          <input type="file" id="import-file" accept="application/json,.json" style="display:none;">
+        </div>
+
+        <div class="setting-row" style="border-color: var(--danger-soft);">
+          <div class="setting-info">
+            <div class="setting-title" style="color: var(--danger);">Borrar todos los datos</div>
+            <div class="setting-desc">Elimina proyectos, tareas, usuarios y actividad. Acción irreversible.</div>
+          </div>
+          <button class="btn btn-danger" id="settings-reset">Borrar todo</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/settings.js"></script>
+</body>
+</html>

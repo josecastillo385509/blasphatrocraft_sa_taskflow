@@ -1,554 +1,116 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light" data-page="tasks">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TaskFlow — Tareas</title>
-  <link rel="stylesheet" href="taskflow.css">
-  <style>
-    .tasks-layout { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
-
-    /* Sidebar */
-    .tasks-sidebar { position: sticky; top: calc(var(--nav-h) + 20px); }
-    .sidebar-section { margin-bottom: 20px; }
-    .sidebar-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 0 12px;
-      margin-bottom: 6px;
-      display: block;
-    }
-    .sidebar-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-size: 0.84rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      transition: all var(--transition);
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-    }
-    .sidebar-item:hover { background: var(--bg-2); color: var(--text-primary); }
-    .sidebar-item.active { background: var(--accent-dim); color: var(--accent); }
-    .sidebar-count {
-      margin-left: auto;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      background: var(--bg-3);
-      padding: 1px 6px;
-      border-radius: 100px;
-    }
-    .proj-color-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-
-    /* Tasks list */
-    .tasks-toolbar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .tasks-toolbar .search-wrap { flex: 1; min-width: 200px; }
-
-    .task-item {
-      background: var(--bg-1);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      transition: all var(--transition);
-      animation: fadeIn 0.2s ease;
-    }
-    .task-item:hover { border-color: var(--border-light); }
-    .task-item.overdue { border-left: 3px solid var(--red); }
-    .task-item.done-item { opacity: 0.55; }
-
-    .task-checkbox {
-      width: 18px; height: 18px;
-      border: 2px solid var(--border-light);
-      border-radius: 5px;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all var(--transition);
-      background: none;
-      display: flex; align-items: center; justify-content: center;
-      margin-top: 2px;
-      font-size: 0.65rem;
-      color: #000;
-    }
-    .task-checkbox.checked { background: var(--green); border-color: var(--green); }
-    .task-checkbox.progress { border-color: var(--blue); }
-
-    .task-body { flex: 1; min-width: 0; }
-    .task-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-      line-height: 1.4;
-    }
-    .task-title.done-text { text-decoration: line-through; color: var(--text-muted); }
-    .task-desc { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
-
-    .task-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .task-project-tag {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      background: var(--bg-2);
-      padding: 2px 8px;
-      border-radius: 100px;
-    }
-    .task-due {
-      font-size: 0.72rem;
-      font-family: var(--font-mono);
-      color: var(--text-muted);
-    }
-    .task-due.overdue-label { color: var(--red); }
-
-    .task-actions {
-      display: flex;
-      gap: 4px;
-      flex-shrink: 0;
-      align-items: flex-start;
-    }
-
-    .assignee-chip {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-    .assignee-mini {
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: #000;
-      font-size: 0.6rem;
-      font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .bulk-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--bg-2);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-sm);
-      padding: 8px 14px;
-      margin-bottom: 12px;
-      font-size: 0.82rem;
-    }
-
-    @media (max-width: 768px) {
-      .tasks-layout { grid-template-columns: 1fr; }
-      .tasks-sidebar { position: static; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tareas — TaskFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div id="navWrap"></div>
 
+<div class="app" id="app">
   <main class="main">
-    <div class="container">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">Ges<span>tión de</span> Tareas</h1>
-          <p class="page-subtitle" id="taskCount"></p>
-        </div>
-        <button class="btn btn-primary" id="newTaskBtn">+ Nueva Tarea</button>
+    <div id="topbar-mount"></div>
+    <div class="content">
+      <div class="toolbar">
+        <select class="field-select" id="filter-project">
+          <option value="all">Todos los proyectos</option>
+        </select>
+        <select class="field-select" id="filter-status">
+          <option value="all">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en-progreso">En progreso</option>
+          <option value="terminado">Terminado</option>
+        </select>
+        <select class="field-select" id="filter-priority">
+          <option value="all">Todas las prioridades</option>
+          <option value="alta">Alta</option>
+          <option value="media">Media</option>
+          <option value="baja">Baja</option>
+        </select>
+        <input type="text" class="field-input" id="filter-search" placeholder="Buscar tarea..." style="flex:1; min-width:180px;">
+        <button class="btn btn-accent" id="btn-new-task">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+          Nueva tarea
+        </button>
       </div>
-
-      <div class="tasks-layout">
-        <!-- Sidebar -->
-        <div class="tasks-sidebar">
-          <div class="card">
-            <div class="sidebar-section">
-              <span class="sidebar-label">Estado</span>
-              <button class="sidebar-item active" data-filter="all" onclick="setFilter(this,'all')">
-                <span>◉ Todas</span><span class="sidebar-count" id="cnt-all">0</span>
-              </button>
-              <button class="sidebar-item" data-filter="pending" onclick="setFilter(this,'pending')">
-                <span>○ Pendientes</span><span class="sidebar-count" id="cnt-pending">0</span>
-              </button>
-              <button class="sidebar-item" data-filter="progress" onclick="setFilter(this,'progress')">
-                <span>▶ En Progreso</span><span class="sidebar-count" id="cnt-progress">0</span>
-              </button>
-              <button class="sidebar-item" data-filter="done" onclick="setFilter(this,'done')">
-                <span>✓ Completadas</span><span class="sidebar-count" id="cnt-done">0</span>
-              </button>
-              <button class="sidebar-item" data-filter="overdue" onclick="setFilter(this,'overdue')">
-                <span>⚠ Vencidas</span><span class="sidebar-count" id="cnt-overdue">0</span>
-              </button>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="sidebar-section">
-              <span class="sidebar-label">Prioridad</span>
-              <button class="sidebar-item" data-priority="high" onclick="setPriority(this,'high')">
-                <span style="color:var(--red)">● Alta</span><span class="sidebar-count" id="cnt-high">0</span>
-              </button>
-              <button class="sidebar-item" data-priority="medium" onclick="setPriority(this,'medium')">
-                <span style="color:var(--accent)">● Media</span><span class="sidebar-count" id="cnt-medium">0</span>
-              </button>
-              <button class="sidebar-item" data-priority="low" onclick="setPriority(this,'low')">
-                <span style="color:var(--green)">● Baja</span><span class="sidebar-count" id="cnt-low">0</span>
-              </button>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="sidebar-section">
-              <span class="sidebar-label">Proyectos</span>
-              <div id="projFilter"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Main -->
-        <div>
-          <!-- Toolbar -->
-          <div class="tasks-toolbar">
-            <div class="search-wrap">
-              <span class="search-icon">⌕</span>
-              <input type="text" class="form-input search-input" id="searchInput" placeholder="Buscar tarea...">
-            </div>
-            <select class="form-select" id="sortSelect" style="width:auto">
-              <option value="newest">Más nuevas</option>
-              <option value="oldest">Más antiguas</option>
-              <option value="priority">Por prioridad</option>
-              <option value="due">Por fecha límite</option>
-            </select>
-          </div>
-
-          <!-- Tasks -->
-          <div id="tasksList"></div>
-        </div>
-      </div>
+      <div id="tasks-container"></div>
     </div>
   </main>
+</div>
 
-  <!-- Modal: Task Form -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-title" id="modalTitle">Nueva Tarea</span>
-        <button class="modal-close" id="modalClose">✕</button>
+<!-- Modal Tarea -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title" id="modal-task-title">Nueva <em>tarea</em></h3>
+      <button class="icon-btn-sm" data-close-modal>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field" data-field="task-title">
+        <label class="field-label">Título <span class="req">*</span></label>
+        <input class="field-input" id="task-title" maxlength="120" placeholder="Ej: Diseñar página de inicio">
+        <div class="field-error">El título es obligatorio.</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Título *</label>
-        <input type="text" class="form-input" id="taskTitle" placeholder="Descripción breve...">
+      <div class="field">
+        <label class="field-label">Descripción</label>
+        <textarea class="field-textarea" id="task-desc" maxlength="500" placeholder="Detalles adicionales..."></textarea>
       </div>
-      <div class="form-group">
-        <label class="form-label">Descripción</label>
-        <textarea class="form-textarea" id="taskDesc" placeholder="Detalles adicionales..."></textarea>
+      <div class="field" data-field="task-project">
+        <label class="field-label">Proyecto <span class="req">*</span></label>
+        <select class="field-select" id="task-project"></select>
+        <div class="field-error">Selecciona un proyecto.</div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Prioridad</label>
-          <select class="form-select" id="taskPriority">
-            <option value="high">🔴 Alta</option>
-            <option value="medium" selected>🟡 Media</option>
-            <option value="low">🟢 Baja</option>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Prioridad</label>
+          <select class="field-select" id="task-priority">
+            <option value="alta">Alta</option>
+            <option value="media" selected>Media</option>
+            <option value="baja">Baja</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Estado</label>
-          <select class="form-select" id="taskStatus">
-            <option value="pending">Pendiente</option>
-            <option value="progress">En Progreso</option>
-            <option value="done">Completada</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Proyecto</label>
-          <select class="form-select" id="taskProject">
-            <option value="">Sin proyecto</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Asignar a</label>
-          <select class="form-select" id="taskAssignee">
-            <option value="">Sin asignar</option>
+        <div class="field">
+          <label class="field-label">Estado</label>
+          <select class="field-select" id="task-status">
+            <option value="pendiente" selected>Pendiente</option>
+            <option value="en-progreso">En progreso</option>
+            <option value="terminado">Terminado</option>
           </select>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Fecha límite</label>
-        <input type="date" class="form-input" id="taskDue">
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="modalCancel">Cancelar</button>
-        <button class="btn btn-primary" id="modalSave">Guardar</button>
+      <div class="field-row">
+        <div class="field" data-field="task-due">
+          <label class="field-label">Fecha límite</label>
+          <input class="field-input" type="date" id="task-due">
+          <div class="field-error">Fecha inválida.</div>
+        </div>
+        <div class="field">
+          <label class="field-label">Asignar a</label>
+          <select class="field-select" id="task-assignee">
+            <option value="">— Sin asignar —</option>
+          </select>
+        </div>
       </div>
     </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger" id="task-delete" style="margin-right:auto; display:none;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        Eliminar
+      </button>
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn btn-accent" id="task-save">Guardar</button>
+    </div>
   </div>
+</div>
 
-  <script src="taskflow.js"></script>
-  <script>
-    let editingId = null;
-    let filterStatus = 'all';
-    let filterPriority = '';
-    let filterProject = '';
-    let searchQuery = '';
-
-    // ── Populate selects ──────────────────────────────────────────────────────
-    function populateSelects() {
-      const projects = TF.getProjects();
-      const users = TF.getUsers();
-
-      const projSelect = document.getElementById('taskProject');
-      projSelect.innerHTML = '<option value="">Sin proyecto</option>' +
-        projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-
-      const assigneeSelect = document.getElementById('taskAssignee');
-      assigneeSelect.innerHTML = '<option value="">Sin asignar</option>' +
-        users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-    }
-
-    // ── Sidebar counts ────────────────────────────────────────────────────────
-    function updateCounts() {
-      const tasks = TF.getTasks();
-      document.getElementById('cnt-all').textContent = tasks.length;
-      document.getElementById('cnt-pending').textContent = tasks.filter(t => t.status === 'pending').length;
-      document.getElementById('cnt-progress').textContent = tasks.filter(t => t.status === 'progress').length;
-      document.getElementById('cnt-done').textContent = tasks.filter(t => t.status === 'done').length;
-      document.getElementById('cnt-overdue').textContent = tasks.filter(t => TF.isOverdue(t)).length;
-      document.getElementById('cnt-high').textContent = tasks.filter(t => t.priority === 'high').length;
-      document.getElementById('cnt-medium').textContent = tasks.filter(t => t.priority === 'medium').length;
-      document.getElementById('cnt-low').textContent = tasks.filter(t => t.priority === 'low').length;
-
-      // Project filter list
-      const projects = TF.getProjects();
-      const projFilter = document.getElementById('projFilter');
-      if (!projects.length) {
-        projFilter.innerHTML = `<span style="font-size:0.75rem;color:var(--text-muted);padding:8px 12px;display:block">Sin proyectos</span>`;
-        return;
-      }
-      projFilter.innerHTML = projects.map(p => {
-        const cnt = tasks.filter(t => t.projectId === p.id).length;
-        const active = filterProject === p.id;
-        return `<button class="sidebar-item ${active ? 'active' : ''}" onclick="setProject('${p.id}')">
-          <span class="proj-color-dot" style="background:${p.color}"></span>
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${p.name}</span>
-          <span class="sidebar-count">${cnt}</span>
-        </button>`;
-      }).join('');
-    }
-
-    // ── Filter setters ────────────────────────────────────────────────────────
-    function setFilter(el, val) {
-      filterStatus = val;
-      filterPriority = '';
-      document.querySelectorAll('[data-filter],[data-priority]').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      renderTasks();
-    }
-
-    function setPriority(el, val) {
-      filterPriority = filterPriority === val ? '' : val;
-      filterStatus = 'all';
-      document.querySelectorAll('[data-filter],[data-priority]').forEach(b => b.classList.remove('active'));
-      if (filterPriority) el.classList.add('active');
-      else document.querySelector('[data-filter="all"]').classList.add('active');
-      renderTasks();
-    }
-
-    function setProject(id) {
-      filterProject = filterProject === id ? '' : id;
-      updateCounts();
-      renderTasks();
-    }
-
-    // ── Render ────────────────────────────────────────────────────────────────
-    function renderTasks() {
-      let tasks = TF.getTasks();
-
-      // Filter
-      if (filterStatus === 'overdue') tasks = tasks.filter(t => TF.isOverdue(t));
-      else if (filterStatus !== 'all') tasks = tasks.filter(t => t.status === filterStatus);
-      if (filterPriority) tasks = tasks.filter(t => t.priority === filterPriority);
-      if (filterProject) tasks = tasks.filter(t => t.projectId === filterProject);
-      if (searchQuery) tasks = tasks.filter(t => t.title.toLowerCase().includes(searchQuery.toLowerCase()) || t.description?.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      // Sort
-      const sort = document.getElementById('sortSelect').value;
-      if (sort === 'oldest') tasks.sort((a,b) => a.createdAt.localeCompare(b.createdAt));
-      else if (sort === 'newest') tasks.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
-      else if (sort === 'priority') {
-        const ord = { high: 0, medium: 1, low: 2 };
-        tasks.sort((a,b) => ord[a.priority] - ord[b.priority]);
-      } else if (sort === 'due') {
-        tasks.sort((a,b) => {
-          if (!a.dueDate) return 1;
-          if (!b.dueDate) return -1;
-          return a.dueDate.localeCompare(b.dueDate);
-        });
-      }
-
-      document.getElementById('taskCount').textContent = `${tasks.length} tarea${tasks.length !== 1 ? 's' : ''}`;
-
-      const el = document.getElementById('tasksList');
-      if (!tasks.length) {
-        el.innerHTML = `<div class="empty-state">
-          <div class="empty-state-icon">◉</div>
-          <h3>Sin tareas</h3>
-          <p>Crea una nueva tarea o ajusta los filtros</p>
-        </div>`;
-        updateCounts();
-        return;
-      }
-
-      el.innerHTML = tasks.map(t => {
-        const project = t.projectId ? TF.getProject(t.projectId) : null;
-        const assignee = t.assigneeId ? TF.getUser(t.assigneeId) : null;
-        const overdue = TF.isOverdue(t);
-        const done = t.status === 'done';
-        const cbClass = done ? 'checked' : t.status === 'progress' ? 'progress' : '';
-        return `
-          <div class="task-item ${overdue ? 'overdue' : ''} ${done ? 'done-item' : ''}">
-            <div class="task-checkbox ${cbClass}" onclick="cycleStatus('${t.id}')">${done ? '✓' : ''}</div>
-            <div class="task-body">
-              <div class="task-title ${done ? 'done-text' : ''}">${t.title}</div>
-              ${t.description ? `<div class="task-desc">${t.description}</div>` : ''}
-              <div class="task-meta">
-                <span class="badge ${TF.priorityClass[t.priority]}">${TF.priorityLabel[t.priority]}</span>
-                <span class="badge ${TF.statusClass[t.status]}">${TF.statusLabel[t.status]}</span>
-                ${project ? `<span class="task-project-tag"><span class="proj-color-dot" style="background:${project.color}"></span>${project.name}</span>` : ''}
-                ${assignee ? `<span class="assignee-chip"><span class="assignee-mini" style="background:var(--accent)">${assignee.avatar}</span>${assignee.name}</span>` : ''}
-                ${t.dueDate ? `<span class="task-due ${overdue ? 'overdue-label' : ''}">${overdue ? '⚠ ' : ''}${TF.formatDate(t.dueDate)}</span>` : ''}
-              </div>
-            </div>
-            <div class="task-actions">
-              <button class="btn btn-ghost btn-sm btn-icon" onclick="openEdit('${t.id}')" title="Editar">✎</button>
-              <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTask('${t.id}')" title="Eliminar">✕</button>
-            </div>
-          </div>`;
-      }).join('');
-
-      updateCounts();
-    }
-
-    // ── Cycle status ──────────────────────────────────────────────────────────
-    function cycleStatus(id) {
-      const task = TF.getTask(id);
-      if (!task) return;
-      const cycle = { pending: 'progress', progress: 'done', done: 'pending' };
-      TF.updateTask(id, { status: cycle[task.status] });
-      renderTasks();
-    }
-
-    // ── Modal ──────────────────────────────────────────────────────────────────
-    function openNew() {
-      editingId = null;
-      populateSelects();
-      document.getElementById('modalTitle').textContent = 'Nueva Tarea';
-      document.getElementById('taskTitle').value = '';
-      document.getElementById('taskDesc').value = '';
-      document.getElementById('taskPriority').value = 'medium';
-      document.getElementById('taskStatus').value = 'pending';
-      document.getElementById('taskDue').value = '';
-      // Pre-select project from filter
-      document.getElementById('taskProject').value = filterProject || '';
-      document.getElementById('taskAssignee').value = '';
-      document.getElementById('modalOverlay').classList.add('open');
-      document.getElementById('taskTitle').focus();
-    }
-
-    function openEdit(id) {
-      const t = TF.getTask(id);
-      if (!t) return;
-      editingId = id;
-      populateSelects();
-      document.getElementById('modalTitle').textContent = 'Editar Tarea';
-      document.getElementById('taskTitle').value = t.title;
-      document.getElementById('taskDesc').value = t.description;
-      document.getElementById('taskPriority').value = t.priority;
-      document.getElementById('taskStatus').value = t.status;
-      document.getElementById('taskDue').value = t.dueDate || '';
-      document.getElementById('taskProject').value = t.projectId || '';
-      document.getElementById('taskAssignee').value = t.assigneeId || '';
-      document.getElementById('modalOverlay').classList.add('open');
-      document.getElementById('taskTitle').focus();
-    }
-
-    function closeModal() {
-      document.getElementById('modalOverlay').classList.remove('open');
-    }
-
-    function saveTask() {
-      const title = document.getElementById('taskTitle').value.trim();
-      if (!title) { showToast('El título es obligatorio', 'error'); return; }
-      const data = {
-        title,
-        description: document.getElementById('taskDesc').value,
-        priority: document.getElementById('taskPriority').value,
-        status: document.getElementById('taskStatus').value,
-        dueDate: document.getElementById('taskDue').value || null,
-        projectId: document.getElementById('taskProject').value || null,
-        assigneeId: document.getElementById('taskAssignee').value || null,
-      };
-      if (editingId) {
-        TF.updateTask(editingId, data);
-        showToast('Tarea actualizada', 'success');
-      } else {
-        TF.createTask(data);
-        showToast('Tarea creada', 'success');
-      }
-      closeModal();
-      renderTasks();
-    }
-
-    async function deleteTask(id) {
-      const t = TF.getTask(id);
-      const ok = await confirmDialog('Eliminar tarea', `¿Eliminar "${t?.title}"?`);
-      if (!ok) return;
-      TF.deleteTask(id);
-      showToast('Tarea eliminada', 'info');
-      renderTasks();
-    }
-
-    // ── Events ────────────────────────────────────────────────────────────────
-    document.getElementById('newTaskBtn').addEventListener('click', openNew);
-    document.getElementById('modalClose').addEventListener('click', closeModal);
-    document.getElementById('modalCancel').addEventListener('click', closeModal);
-    document.getElementById('modalSave').addEventListener('click', saveTask);
-    document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; renderTasks(); });
-    document.getElementById('sortSelect').addEventListener('change', renderTasks);
-    document.getElementById('modalOverlay').addEventListener('click', e => {
-      if (e.target === document.getElementById('modalOverlay')) closeModal();
-    });
-    document.getElementById('taskTitle').addEventListener('keydown', e => { if (e.key === 'Enter') saveTask(); });
-
-    // ── URL params ────────────────────────────────────────────────────────────
-    const params = new URLSearchParams(location.search);
-    if (params.get('project')) { filterProject = params.get('project'); }
-
-    updateCounts();
-    renderTasks();
-  </script>
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/tasks.js"></script>
 </body>
 </html>

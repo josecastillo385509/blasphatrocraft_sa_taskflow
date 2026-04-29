@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" data-page="users">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuarios — TaskFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:opsz,wght@9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app" id="app">
+  <main class="main">
+    <div id="topbar-mount"></div>
+    <div class="content">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; gap:12px; flex-wrap:wrap;">
+        <p style="color:var(--text-muted); font-size:14px; max-width:520px;">
+          Crea perfiles simples para asignar tareas. Solo el nombre, sin autenticación.
+        </p>
+        <button class="btn btn-accent" id="btn-new-user">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>
+          Nuevo usuario
+        </button>
+      </div>
+      <div id="users-container"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Usuario -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 class="modal-title">Nuevo <em>usuario</em></h3>
+      <button class="icon-btn-sm" data-close-modal>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field" data-field="user-name">
+        <label class="field-label">Nombre <span class="req">*</span></label>
+        <input class="field-input" id="user-name" maxlength="60" placeholder="Ej: Ana Martínez">
+        <div class="field-error">El nombre es obligatorio.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>Cancelar</button>
+      <button class="btn btn-accent" id="user-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/users.js"></script>
+</body>
+</html>
